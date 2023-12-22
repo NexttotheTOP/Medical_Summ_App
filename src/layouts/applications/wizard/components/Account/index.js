@@ -14,6 +14,7 @@ Coded by www.creative-tim.com
 */
 
 import { useState } from "react";
+import PropTypes from 'prop-types';
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -27,15 +28,28 @@ import SoftButton from "components/SoftButton";
 import Settings from "examples/Icons/Settings";
 import Cube from "examples/Icons/Cube";
 import SpaceShip from "examples/Icons/SpaceShip";
+import customIcons from "layouts/pages/projects/recording/components/customIcons.js";
 
-function Account() {
+function Account({ setProfession }) {
   const [design, setDesign] = useState(false);
   const [code, setCode] = useState(false);
   const [develop, setDevelop] = useState(false);
 
-  const handleSetDesign = () => setDesign(!design);
-  const handleSetCode = () => setCode(!code);
-  const handleSetDevelop = () => setDevelop(!develop);
+
+  const handleSetDesign = () => {
+    setDesign(!design);
+    if (!design) setProfession("Medical");
+  };
+
+  const handleSetCode = () => {
+    setCode(!code);
+    if (!code) setProfession("Therapy");
+  };
+
+  const handleSetDevelop = () => {
+    setDevelop(!develop);
+    if (!develop) setProfession("Psychology");
+  };
 
   const customButtonStyles = ({
     functions: { pxToRem, rgba },
@@ -63,16 +77,18 @@ function Account() {
     },
   });
 
+
+
   return (
     <SoftBox>
       <SoftBox width="80%" textAlign="center" mx="auto" mb={4}>
         <SoftBox mb={1}>
           <SoftTypography variant="h5" fontWeight="regular">
-            What are you doing? (checkboxes)
+            What is your profession? 
           </SoftTypography>
         </SoftBox>
         <SoftTypography variant="body2" fontWeight="regular" color="text">
-          Give us more details about you. What do you enjoy doing in your spare time?
+          Based on your profession, we will setup your account with the corresponding default settings and summarization types. 
         </SoftTypography>
       </SoftBox>
       <SoftBox mt={2}>
@@ -85,9 +101,9 @@ function Account() {
                 onClick={handleSetDesign}
                 sx={customButtonStyles}
               >
-                <Settings size="24px" color={design ? "white" : "dark"} />
+                { design ? customIcons.MedicalIconLight : customIcons.MedicalIconDark}
               </SoftButton>
-              <SoftTypography variant="h6">Design</SoftTypography>
+              <SoftTypography variant="h6">Medical</SoftTypography>
             </SoftBox>
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -98,9 +114,9 @@ function Account() {
                 onClick={handleSetCode}
                 sx={customButtonStyles}
               >
-                <Cube size="24px" color={code ? "white" : "dark"} />
+                {code ? customIcons.therapyIconLight : customIcons.therapyIconDark}
               </SoftButton>
-              <SoftTypography variant="h6">Code</SoftTypography>
+              <SoftTypography variant="h6">Therapy</SoftTypography>
             </SoftBox>
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -111,9 +127,9 @@ function Account() {
                 onClick={handleSetDevelop}
                 sx={customButtonStyles}
               >
-                <SpaceShip size="24px" color={develop ? "white" : "dark"} />
+                { develop ? customIcons.PsychologyIconLight : customIcons.PsychologyIconDark}
               </SoftButton>
-              <SoftTypography variant="h6">Develop</SoftTypography>
+              <SoftTypography variant="h6">Psychology</SoftTypography>
             </SoftBox>
           </Grid>
         </Grid>
@@ -121,5 +137,9 @@ function Account() {
     </SoftBox>
   );
 }
+
+Account.propTypes = {
+  setProfession: PropTypes.func.isRequired,
+};
 
 export default Account;

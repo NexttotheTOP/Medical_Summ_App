@@ -48,7 +48,7 @@ function getSteps() {
   return ["About", "Account", "Address"];
 }
 
-function getStepContent(stepIndex, firstName, setFirstName, lastName, setLastName, email, setEmail) {
+/*function getStepContent(stepIndex, firstName, setFirstName, lastName, setLastName, email, setEmail) {
   switch (stepIndex) {
     case 0:
       return <About 
@@ -60,13 +60,13 @@ function getStepContent(stepIndex, firstName, setFirstName, lastName, setLastNam
                 setEmail={setEmail} 
              />;
     case 1:
-      return <Account />;
+      return <Account setProfession={setProfession} />;
     case 2:
       return <Address />;
     default:
       return null;
   }
-}
+}*/
 
 
 
@@ -75,11 +75,32 @@ function Wizard() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [profession, setProfession] = useState('');
   const steps = getSteps();
   const isLastStep = activeStep === steps.length - 1;
 
   const handleNext = () => setActiveStep(activeStep + 1);
   const handleBack = () => setActiveStep(activeStep - 1);
+
+  function getStepContent(stepIndex, firstName, setFirstName, lastName, setLastName, email, setEmail) {
+    switch (stepIndex) {
+      case 0:
+        return <About 
+                  firstName={firstName} 
+                  setFirstName={setFirstName} 
+                  lastName={lastName} 
+                  setLastName={setLastName} 
+                  email={email} 
+                  setEmail={setEmail} 
+               />;
+      case 1:
+        return <Account setProfession={setProfession} />;
+      case 2:
+        return <Address />;
+      default:
+        return null;
+    }
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent default form submission behavior
@@ -89,7 +110,8 @@ function Wizard() {
       const userData = {
         firstname: firstName,
         lastname: lastName,
-        email: email
+        email: email,
+        profession: profession
       };
       const uid = auth.currentUser.uid;
       const userDocRef = doc(db, 'users', uid);
@@ -97,7 +119,12 @@ function Wizard() {
   
       try {
         await setDoc(userDocRef, userData); 
-        console.log("Document written with ID: ", docRef.id);
+        console.log("Document written with ID: ", userDocRef);
+
+        // Move to the next step after successful data storage
+        if (!isLastStep) {
+          handleNext();
+        }
       } catch (e) {
         console.error("Error adding document: ", e);
       }
@@ -145,7 +172,7 @@ function Wizard() {
                     <SoftButton
                       variant="gradient"
                       color="dark"
-                      onClick={!isLastStep ? handleSubmit : handleNext}
+                      onClick={isLastStep ? handleNext : handleSubmit}
                     >
                       {isLastStep ? "send" : "next"}
                     </SoftButton>
