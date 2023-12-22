@@ -14,6 +14,8 @@ Coded by www.creative-tim.com
 */
 
 import { useState } from "react";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 // react-router-dom components
 import { Link } from "react-router-dom";
@@ -37,10 +39,33 @@ import Separator from "layouts/authentication/components/Separator";
 import curved9 from "assets/images/curved-images/curved9.jpg";
 
 function Basic() {
+  const [email, setEmail] = useState('');   // State for email
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
+  const signInHandler = () => {
+    event.preventDefault();
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user;
+        console.log("UC: ", userCredential)
+        console.log("user", user)
+        navigate('/pages/profile/profile-overview');
+        // Redirect or perform additional actions
+      })
+      .catch((error) => {
+        console.log("error:", error)
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // Show error message
+      });
+  };
   return (
     <BasicLayout
       title="Welcome!"
@@ -54,15 +79,15 @@ function Basic() {
           </SoftTypography>
         </SoftBox>
         <SoftBox mb={2}>
-          <Socials />
+          <Socials action="signin" />
         </SoftBox>
         <SoftBox p={3}>
           <SoftBox component="form" role="form">
             <SoftBox mb={2}>
-              <SoftInput type="email" placeholder="Email" />
+              <SoftInput type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </SoftBox>
             <SoftBox mb={2}>
-              <SoftInput type="password" placeholder="Password" />
+              <SoftInput type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </SoftBox>
             <SoftBox display="flex" alignItems="center">
               <Switch checked={rememberMe} onChange={handleSetRememberMe} />
@@ -76,7 +101,7 @@ function Basic() {
               </SoftTypography>
             </SoftBox>
             <SoftBox mt={4} mb={1}>
-              <SoftButton variant="gradient" color="info" fullWidth>
+              <SoftButton variant="gradient" color="info" fullWidth onClick={signInHandler}>
                 sign in
               </SoftButton>
             </SoftBox>

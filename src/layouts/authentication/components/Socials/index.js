@@ -14,10 +14,38 @@ Coded by www.creative-tim.com
 */
 
 // Soft UI Dashboard PRO React components
+import PropTypes from 'prop-types';
 import SoftButton from "components/SoftButton";
 import SoftBox from "components/SoftBox";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
-function Socials() {
+
+function Socials({ action }) {
+
+  const navigate = useNavigate();
+
+  const signInWithGoogle = () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+  
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        if (action === "signup") {
+          navigate('/applications/wizard');
+          console.log("Google signup Auth User:", user);
+        } else {
+          navigate('/pages/profile/profile-overview');
+          console.log("user logged in with google", user);
+        }  
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        console.error("Error during Google sign-in:", error);
+      });
+  };
+
   return (
     <SoftBox display="flex" justifyContent="center">
       <SoftButton variant="outlined" color="light">
@@ -44,7 +72,7 @@ function Socials() {
           </svg>
         </SoftButton>
       </SoftBox>
-      <SoftButton variant="outlined" color="light">
+      <SoftButton variant="outlined" color="light" onClick={signInWithGoogle} >
         <svg width="24px" height="32px" viewBox="0 0 64 64" version="1.1">
           <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g transform="translate(3.000000, 2.000000)" fillRule="nonzero">
@@ -71,5 +99,9 @@ function Socials() {
     </SoftBox>
   );
 }
+
+Socials.PropTypes = {
+  action: PropTypes.oneOf(['signup', 'signin']).isRequired
+};
 
 export default Socials;

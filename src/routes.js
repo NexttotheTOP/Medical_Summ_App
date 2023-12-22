@@ -293,7 +293,7 @@ const routes = [
         component: <Kanban />,
       },
       {
-        name: "Wizard",
+      name: "Wizard",
         key: "wizard",
         route: "/applications/wizard",
         component: <Wizard />,

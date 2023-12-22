@@ -14,6 +14,10 @@ Coded by www.creative-tim.com
 */
 
 import { useState } from "react";
+import "firebase.js"
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+//import { db } from "firebase";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -37,14 +41,24 @@ import About from "layouts/applications/wizard/components/About";
 import Account from "layouts/applications/wizard/components/Account";
 import Address from "layouts/applications/wizard/components/Address";
 
+
+const db = getFirestore();
+
 function getSteps() {
   return ["About", "Account", "Address"];
 }
 
-function getStepContent(stepIndex) {
+function getStepContent(stepIndex, firstName, setFirstName, lastName, setLastName, email, setEmail) {
   switch (stepIndex) {
     case 0:
-      return <About />;
+      return <About 
+                firstName={firstName} 
+                setFirstName={setFirstName} 
+                lastName={lastName} 
+                setLastName={setLastName} 
+                email={email} 
+                setEmail={setEmail} 
+             />;
     case 1:
       return <Account />;
     case 2:
@@ -54,13 +68,43 @@ function getStepContent(stepIndex) {
   }
 }
 
+
+
 function Wizard() {
   const [activeStep, setActiveStep] = useState(0);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const steps = getSteps();
   const isLastStep = activeStep === steps.length - 1;
 
   const handleNext = () => setActiveStep(activeStep + 1);
   const handleBack = () => setActiveStep(activeStep - 1);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent default form submission behavior
+  
+    const auth = getAuth();
+    if (auth.currentUser) {
+      const userData = {
+        firstname: firstName,
+        lastname: lastName,
+        email: email
+      };
+      const uid = auth.currentUser.uid;
+      const userDocRef = doc(db, 'users', uid);
+      console.log(" we have uid", uid, userData)
+  
+      try {
+        await setDoc(userDocRef, userData); 
+        console.log("Document written with ID: ", docRef.id);
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    } else {
+      console.log("no authenticated user found");
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -89,7 +133,7 @@ function Wizard() {
             <Card>
               <SoftBox p={2}>
                 <SoftBox>
-                  {getStepContent(activeStep)}
+                  {getStepContent(activeStep, firstName, setFirstName, lastName, setLastName, email, setEmail)}
                   <SoftBox mt={3} width="100%" display="flex" justifyContent="space-between">
                     {activeStep === 0 ? (
                       <SoftBox />
@@ -101,7 +145,7 @@ function Wizard() {
                     <SoftButton
                       variant="gradient"
                       color="dark"
-                      onClick={!isLastStep ? handleNext : undefined}
+                      onClick={!isLastStep ? handleSubmit : handleNext}
                     >
                       {isLastStep ? "send" : "next"}
                     </SoftButton>

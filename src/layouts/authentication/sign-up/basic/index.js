@@ -14,6 +14,9 @@ Coded by www.creative-tim.com
 */
 
 import { useState } from "react";
+import "firebase.js"
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 // react-router-dom components
 import { Link } from "react-router-dom";
@@ -41,21 +44,28 @@ function Basic() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSetAgremment = () => setAgremment(!agreement);
 
-  const signup = (event) => {
+  const signupHandler = () => {
     event.preventDefault();
-    auth.createUserWithEmailAndPassword(email, password)
+    console.log(email, password);
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        console.log(userCredential);
+        const user = userCredential.user;
+        navigate('/applications/wizard');
+        console.log("signup succeed:", userCredential)
+        // Signed up
       })
       .catch((error) => {
-        // Handle errors here
-        console.error("Error during signup: ", error.message);
+        // Error handling
+        console.error("error during signup:", error)
       });
   };
 
+    
   return (
     <BasicLayout
       title="Welcome!"
@@ -69,7 +79,7 @@ function Basic() {
           </SoftTypography>
         </SoftBox>
         <SoftBox mb={2}>
-          <Socials />
+          <Socials action="signup" />
         </SoftBox>
         <Separator />
         <SoftBox pt={2} pb={3} px={3}>
@@ -104,7 +114,7 @@ function Basic() {
               </SoftTypography>
             </SoftBox>
             <SoftBox mt={4} mb={1}>
-              <SoftButton variant="gradient" color="dark" fullWidth onClick={signup}>
+              <SoftButton variant="gradient" color="dark" fullWidth onClick={signupHandler}>
                 sign up
               </SoftButton>
             </SoftBox>

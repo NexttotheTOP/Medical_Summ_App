@@ -13,6 +13,8 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
+import PropTypes from 'prop-types';
+
 // @mui material components
 import Grid from "@mui/material/Grid";
 import Icon from "@mui/material/Icon";
@@ -29,7 +31,10 @@ import FormField from "layouts/applications/wizard/components/FormField";
 // Images
 import team2 from "assets/images/team-2.jpg";
 
-function About() {
+
+function About({ firstName, setFirstName, lastName, setLastName, email, setEmail }) {
+
+
   return (
     <SoftBox>
       <SoftBox width="80%" textAlign="center" mx="auto" mb={4}>
@@ -57,13 +62,13 @@ function About() {
           </Grid>
           <Grid item xs={12} sm={8}>
             <SoftBox mb={2}>
-              <FormField type="text" label="first name" placeholder="Eg. Michael" />
+              <FormField type="text" label="first name" placeholder="Eg. Michael" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </SoftBox>
             <SoftBox mb={2}>
-              <FormField type="text" label="last name" placeholder="Eg. Tomson" />
+              <FormField type="text" label="last name" placeholder="Eg. Tomson" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </SoftBox>
             <SoftBox>
-              <FormField type="text" label="email address" placeholder="Eg. soft@dashboard.com" />
+              <FormField type="text" label="email address" placeholder="Eg. soft@dashboard.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </SoftBox>
           </Grid>
         </Grid>
@@ -71,5 +76,14 @@ function About() {
     </SoftBox>
   );
 }
+
+About.propTypes = {
+  firstName: PropTypes.string.isRequired,
+  setFirstName: PropTypes.func.isRequired,
+  lastName: PropTypes.string.isRequired,
+  setLastName: PropTypes.func.isRequired,
+  email: PropTypes.string.isRequired,
+  setEmail: PropTypes.func.isRequired,
+};
 
 export default About;
