@@ -16,7 +16,6 @@ Coded by www.creative-tim.com
 import { useState } from "react";
 import PropTypes from 'prop-types';
 
-// @mui material components
 import Grid from "@mui/material/Grid";
 
 // Soft UI Dashboard PRO React components
@@ -24,31 +23,24 @@ import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import SoftButton from "components/SoftButton";
 
-// Soft UI Dashboard PRO React icons
-import Settings from "examples/Icons/Settings";
-import Cube from "examples/Icons/Cube";
-import SpaceShip from "examples/Icons/SpaceShip";
 import customIcons from "layouts/pages/projects/recording/components/customIcons.js";
 
-function Account({ setProfession }) {
-  const [design, setDesign] = useState(false);
-  const [code, setCode] = useState(false);
-  const [develop, setDevelop] = useState(false);
+function Account({ setProfession, design, code, develop }) {
+  //const [design, setDesign] = useState(false);
+  //const [code, setCode] = useState(false);
+  //const [develop, setDevelop] = useState(false);
 
 
   const handleSetDesign = () => {
-    setDesign(!design);
-    if (!design) setProfession("Medical");
+    setProfession(design ? "" : "Medical");
   };
 
   const handleSetCode = () => {
-    setCode(!code);
-    if (!code) setProfession("Therapy");
+    setProfession(code ? "" : "Therapy");
   };
 
   const handleSetDevelop = () => {
-    setDevelop(!develop);
-    if (!develop) setProfession("Psychology");
+    setProfession(develop ? "" : "Psychology");
   };
 
   const customButtonStyles = ({
@@ -140,6 +132,9 @@ function Account({ setProfession }) {
 
 Account.propTypes = {
   setProfession: PropTypes.func.isRequired,
+  design: PropTypes.bool.isRequired,
+  code: PropTypes.bool.isRequired,
+  develop: PropTypes.bool.isRequired,
 };
 
 export default Account;
