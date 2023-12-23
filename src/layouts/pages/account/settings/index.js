@@ -30,6 +30,7 @@ import Accounts from "layouts/pages/account/settings/components/Accounts";
 import Notifications from "layouts/pages/account/settings/components/Notifications";
 import Sessions from "layouts/pages/account/settings/components/Sessions";
 import DeleteAccount from "layouts/pages/account/settings/components/DeleteAccount";
+import Logout from "./components/Logout";
 
 function Settings() {
   return (
@@ -64,8 +65,12 @@ function Settings() {
                   <Sessions />
                 </Grid>
                 <Grid item xs={12}>
+                  <Logout />
+                </Grid>
+                <Grid item xs={12}>
                   <DeleteAccount />
                 </Grid>
+                
               </Grid>
             </SoftBox>
           </Grid>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Grid, AppBar, Tabs, Tab } from '@mui/material';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
@@ -15,6 +17,8 @@ import bruceMarsImage from "assets/images/bruce-mars.jpg";
 function TitleSection() {
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState({ name: "", profession: "" });
 
   useEffect(() => {
     function handleTabsOrientation() {
@@ -28,6 +32,29 @@ function TitleSection() {
 
     return () => window.removeEventListener("resize", handleTabsOrientation);
   }, [tabsOrientation]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const db = getFirestore();
+  
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Haal gebruikersgegevens op uit de database
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserData({
+            name: userDoc.data().firstname || "Not authenticated",
+            profession: userDoc.data().profession || "Login to your account or sign-up",
+            lastname: userDoc.data().lastname || "",
+          });
+        }
+      }
+    });
+  
+    return () => unsubscribe();
+  }, []);
 
   const handleSetTabValue = (event, newValue) => setTabValue(newValue);
 
@@ -58,10 +85,10 @@ function TitleSection() {
           <Grid item>
             <SoftBox height="100%" mt={0.5} lineHeight={1}>
               <SoftTypography variant="h5" fontWeight="medium">
-                Alex Thompson
+              {user ? `${userData.name} ${userData.lastname}` : "Alex Thompson"}
               </SoftTypography>
               <SoftTypography variant="button" color="text" fontWeight="medium">
-                CEO / Co-Founder
+              {user ? userData.profession : "CEO / Co-Founder"}
               </SoftTypography>
             </SoftBox>
           </Grid>

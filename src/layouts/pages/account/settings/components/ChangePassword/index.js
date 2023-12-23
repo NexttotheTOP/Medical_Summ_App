@@ -1,49 +1,57 @@
-/**
-=========================================================
-* Soft UI Dashboard PRO React - v4.0.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/soft-ui-dashboard-pro-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// @mui material components
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
-
-// Soft UI Dashboard PRO React components
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
+import { useState } from "react";
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import SoftButton from "components/SoftButton";
-
-// Settings page components
 import FormField from "layouts/pages/account/components/FormField";
 
 function ChangePassword() {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [message, setMessage] = useState('');
+
+  const isPasswordUser = user && user.providerData.some((provider) => provider.providerId === 'password');
+
+  const handleChangePassword = async () => {
+    if (!isPasswordUser) {
+      setMessage("Your account is authenticated through a third-party provider. Please use their service to change your password.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setMessage("New passwords do not match. Please try again.");
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+      setMessage("Password changed successfully.");
+    } catch (error) {
+      setMessage("Error in changing password: " + error.message);
+    }
+  };
+
   const passwordRequirements = [
-    "One special characters",
+    "One special character",
     "Min 6 characters",
     "One number (2 are recommended)",
     "Change it often",
   ];
 
-  const renderPasswordRequirements = passwordRequirements.map((item, key) => {
-    const itemKey = `element-${key}`;
-
-    return (
-      <SoftBox key={itemKey} component="li" color="text" fontSize="1.25rem" lineHeight={1}>
-        <SoftTypography variant="button" color="text" fontWeight="regular" verticalAlign="middle">
-          {item}
-        </SoftTypography>
-      </SoftBox>
-    );
-  });
+  const renderPasswordRequirements = passwordRequirements.map((item, key) => (
+    <SoftBox key={`element-${key}`} component="li" color="text" fontSize="1.25rem" lineHeight={1}>
+      <SoftTypography variant="button" color="text" fontWeight="regular" verticalAlign="middle">
+        {item}
+      </SoftTypography>
+    </SoftBox>
+  ));
 
   return (
     <Card id="change-password">
@@ -55,22 +63,28 @@ function ChangePassword() {
           <Grid item xs={12}>
             <FormField
               label="current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Current Password"
-              inputProps={{ type: "password", autoComplete: "" }}
+              inputProps={{ type: "password", autoComplete: "off" }}
             />
           </Grid>
           <Grid item xs={12}>
             <FormField
               label="new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               placeholder="New Password"
-              inputProps={{ type: "password", autoComplete: "" }}
+              inputProps={{ type: "password", autoComplete: "off" }}
             />
           </Grid>
           <Grid item xs={12}>
             <FormField
               label="confirm new password"
-              placeholder="Confirm Password"
-              inputProps={{ type: "password", autoComplete: "" }}
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              placeholder="Confirm New Password"
+              inputProps={{ type: "password", autoComplete: "off" }}
             />
           </Grid>
         </Grid>
@@ -92,9 +106,16 @@ function ChangePassword() {
             {renderPasswordRequirements}
           </SoftBox>
           <SoftBox ml="auto">
-            <SoftButton variant="gradient" color="dark" size="small">
+            <SoftButton variant="gradient" color="dark" size="small" onClick={handleChangePassword}>
               update password
             </SoftButton>
+          </SoftBox >
+          <SoftBox mt={4} >
+          {message && (
+            <SoftTypography variant="body2">
+              {message}
+            </SoftTypography>
+          )}
           </SoftBox>
         </SoftBox>
       </SoftBox>

@@ -14,6 +14,7 @@ Coded by www.creative-tim.com
 */
 
 import { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 // react-router components
 import { useLocation, Link } from "react-router-dom";
@@ -65,7 +66,17 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsSignedIn(!!user);  // Set true if user is signed in, else false
+    });
+  
+    return () => unsubscribe();  // Cleanup subscription
+  }, []);
+  
   useEffect(() => {
     // Setting the navbar type
     if (fixedNavbar) {
@@ -73,6 +84,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
     } else {
       setNavbarType("static");
     }
+
+    
+
+  
 
     // A function that sets the transparent state of the navbar.
     function handleTransparentNavbar() {
@@ -158,6 +173,21 @@ function DashboardNavbar({ absolute, light, isMini }) {
               />
             </SoftBox>
             <SoftBox color={light ? "white" : "inherit"}>
+              {isSignedIn ? (
+                // If user is signed in, show "Account" and link to profile overview
+              <Link to="/pages/profile/profile-overview">
+                <IconButton sx={navbarIconButton} size="small">
+                  <Icon sx={({ palette: { dark, white } }) => ({ color: light ? white.main : dark.main })}>
+                    account_circle
+                  </Icon>
+                  <SoftTypography variant="button" fontWeight="medium" color={light ? "white" : "dark"}>
+                    Account
+                  </SoftTypography>
+                </IconButton>
+              </Link>
+              ) : (
+              
+              
               <Link to="/authentication/sign-in/basic">
                 <IconButton sx={navbarIconButton} size="small">
                   <Icon
@@ -176,6 +206,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   </SoftTypography>
                 </IconButton>
               </Link>
+              )}
               <IconButton
                 size="small"
                 color="inherit"
