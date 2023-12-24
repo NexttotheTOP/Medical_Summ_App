@@ -39,7 +39,7 @@ function PromptSettings() {
 
 
   const onStyle = {
-    background: 'linear-gradient(to left, #2152ff, #21d4fd) !important', // Styling for 'on' state
+    //background: 'linear-gradient(to left, #2152ff, #21d4fd) !important',
     padding: "10px",
     borderRadius: "8px"
   };
@@ -49,26 +49,29 @@ function PromptSettings() {
     borderRadius: "8px"
   };
   
+  const customCardStyle = {
+    //backgroundColor: '#e9ecef',
 
+    //boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.3)", 
+  };
 
   return (
-    <Card >
-      {/* ... other component code ... */}
-      <SoftBox pt={1.5} pb={2} px={2} lineHeight={1.25}>
+ 
+      <SoftBox pt={2.5} pb={3} px={2} lineHeight={1.25}>
         <Grid container spacing={2}>
           {Object.keys(prompts).map((prompt, index) => (
             <Grid item xs={12} sm={6} key={index}>
-              <Card sx={selectedPrompts[prompt] ? onStyle : offStyle}>
+              <Card sx={{ ...customCardStyle, ...(selectedPrompts[prompt] ? onStyle : offStyle) }}>
                 <SoftBox display="flex" justifyContent="space-between" alignItems="center">
                   <Switch
                     checked={selectedPrompts[prompt]}
                     onChange={() => handleSwitchChange(prompt)}
                   />
-                  <SoftTypography variant="button" fontWeight="regular" sx={{ flexGrow: 1, marginLeft: 2, color: selectedPrompts[prompt] ? 'white !important' : 'black' }}>
+                  <SoftTypography variant="body2" sx={{ flexGrow: 1, marginLeft: 2, color: selectedPrompts[prompt] ? 'black !important' : 'black' }}>
                     {prompt}
                   </SoftTypography>
                   <Icon
-                    sx={{ cursor: "pointer", color: selectedPrompts[prompt] ? 'white !important' : 'black' }}
+                    sx={{ cursor: "pointer", color: selectedPrompts[prompt] ? 'black !important' : 'black' }}
                     onClick={(e) => handleMenuClick(e, prompt)}
                   >
                     more_vert
@@ -88,7 +91,7 @@ function PromptSettings() {
 
         </Grid>
       </SoftBox>
-    </Card>
+
   );
 }
 

@@ -32,7 +32,7 @@ import TitleSection from "./titleheader";
 import customIcons from "./components/customIcons";
 //import breakpoints from "assets/theme/base/breakpoints";
 import prompts from "./components/prompttexts";
-
+import SummariesSidenav from "./sidenavsummaries";
 
 
 
@@ -347,6 +347,17 @@ function RecordingAudio() {
           <MenuItem onClick={() => handleMenuItemClick('Summaries')}>Summaries</MenuItem>
         </Menu>
     ); 
+
+    const handleSummarySelect = (summaryType) => {
+        event.preventDefault();
+        const summaryElement = document.getElementById(summaryType);
+    if (summaryElement) {
+      summaryElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+    };
       
 
     //<SoftBox pt={4} mb={0.5}>
@@ -362,7 +373,9 @@ function RecordingAudio() {
             <SoftBox mt={3} mb={4}>
                 <Grid container spacing={3} justifyContent="center">
                     <Grid item xs={12} lg={4}>
-                        <Card>
+                        <Card sx={{
+                              boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'
+                        }}>
                             <SoftBox p={2}>
                                 <Grid container spacing={3}>
                                     <SoftBox display="flex" flexDirection="column" width="100%" textAlign='center'>
@@ -382,15 +395,15 @@ function RecordingAudio() {
                                                 '& ._1lB9c': {display: 'none'},
                                                 '& ._f2DT8 span': {color: 'black !important', fontSize: '30px', fontWeight: 'bold'},
                                                 '& ._dt3-T': {background: 'white !important'},
-                                                '& ._1dpop': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important'},
+                                                '& ._1dpop': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1) !important' },
                                                 '& ._1ceqH ._1dpop:hover ._3wi1g': {fill: 'lightgray'},
                                                 '& ._1ceqH ._1Yplu ._1Pz2d': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important',
                                                 border: '1px solid white', fontWeight: 'bold !important',
-                                                fontSize: '16px', borderRadius: '6px'
+                                                fontSize: '16px', borderRadius: '6px',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'
                                                 },
                                                 '& ._1ceqH ._1Yplu ._1Pz2d:hover': {background: 'white !important'},
-                                                '& ._1ceqH ._1Yplu ._2gd2_': {background: 'white !important'},
-                                                '& ._1ceqH ._1Yplu ._2gd2_:hover': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important'},
+                                                '& ._1ceqH ._1Yplu ._2gd2_': {background: 'white !important',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
+                                                '& ._1ceqH ._1Yplu ._2gd2_:hover': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
                                                 '& ._1ceqH ._dt3-T': {minHeight: '270px'},
                                                 '& ._1ceqH ._2fG9h': {padding: '20px'},
                                                 '& ._eV_dK': {display: 'none'},
@@ -407,7 +420,7 @@ function RecordingAudio() {
                                                 handleAudioUpload={handleAudioUpload}
                                                 handleReset={handleReset}
                                             />
-                                            <SoftInput placeholder="Name of the Patient" />
+                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Name of the Patient" />
                                         </SoftBox>
                                     </SoftBox>
                                 </Grid>
@@ -415,8 +428,10 @@ function RecordingAudio() {
                         </Card>
                     </Grid>
                     <Grid item xs={12} lg={8}>
-                        <Card>
-                            <SoftBox p={2}>
+                        <Card sx={{
+                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'
+                        }}>
+                            <SoftBox p={2} >
                                 <SoftBox display="flex" justifyContent="space-between" alignItems="center" pt={0} px={2} mb={3}>
                                     <SoftTypography variant="h6" >Preferences</SoftTypography>
                                     <SoftBox width='50%'>
@@ -517,7 +532,11 @@ function RecordingAudio() {
                                         < Grid item xs={12} lg={12}>
                                             < PromptSettings />
                                         </Grid>
-                                       <promptSettings />
+                                        < Grid item xs={12} lg={12} textAlign={'center'} mb={1} mt={1} >
+                                            < SoftButton sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} >
+                                                Add a new prompt
+                                            </SoftButton>
+                                        </Grid>
                                     </SoftBox>
                                 )}
                             </SoftBox>
@@ -525,26 +544,50 @@ function RecordingAudio() {
                     </Grid>
                 </Grid>
             </SoftBox>
-            {Object.keys(summaries).length > 0 && (
-                <SoftBox mt={5} mb={5}>
-                    <Grid container spacing={3} justifyContent="center">
-                        <Grid item xs={11} lg={11}>
-                                <SoftBox p={4} >
-                                    {Object.entries(summaries).map(([promptType, summaryText], index) => (
-                                        <div key={index}>
-                                            <Card style={{ padding: '10px', marginTop: '20px' }}>
-                                                <SoftTypography mb={3} mt={2} textAlign='center' color='text' variant="h5">{promptType}</SoftTypography>
-                                                <SoftTypography variant="body2" style={{ whiteSpace: 'pre-wrap', fontSize: '1.10rem', padding: '10px', paddingLeft: '20px' }}>
-                                                    {summaryText.response}
-                                                </SoftTypography>
-                                            </Card>
-                                        </div>
-                                    ))}
-                                </SoftBox>
+            {
+                Object.keys(summaries).length > 0 ? (
+                    <SoftBox mt={4} mb={4} sx={{
+                        background: 'rgb(245, 245, 245)', // This is a light gray color close to white
+                        borderRadius: '0.5rem',
+                        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                        }}
+                    >
+                    <Card raised>
+                        <Grid container spacing={3} alignItems="stretch">
+                        {/* Sidenav */}
+                        <Grid item xs={9} lg={3.5} sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            overflowY: 'auto', 
+                            maxHeight: '600px',
+                            mt: 2,
+                            ml: 2,
+                            
+                            }}>
+                            <SummariesSidenav summaries={summaries} onSummarySelect={handleSummarySelect} />
                         </Grid>
-                    </Grid>
-                </SoftBox>
-            )}
+
+                        {/* Summaries */}
+                        <Grid item xs={11} lg={8}>
+                        <SoftBox p={2} sx={{ maxHeight: '600px', overflowY: 'auto' }}>
+                            {Object.entries(summaries).map(([promptType, summaryText], index) => (
+                            <Card key={index} id={promptType} sx={{ mb: 2, p: 2, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}> {/* Add margin-bottom and padding */}
+                                <SoftTypography mb={3} mt={2} textAlign='center' color='text' variant="h5">
+                                {promptType}
+                                </SoftTypography>
+                                <SoftTypography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
+                                {summaryText.response}
+                                </SoftTypography>
+                                {index !== Object.entries(summaries).length - 1 && <Divider />} {/* Add divider except for the last item */}
+                            </Card>
+                            ))}
+                        </SoftBox>
+                        </Grid>
+                        </Grid>
+                    </Card>
+                    </SoftBox>
+                ) : null
+            }
             <SoftBox>
                 <Grid container spacing={3} justifyContent="center">
                 <Grid item xs={11} lg={11}> {/* Adjust lg value as needed for the transcription box */}
