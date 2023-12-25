@@ -6,7 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
 import SoftButton from "components/SoftButton";
-
+import AudioVisualizer from "./audioanimation";
 
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
@@ -33,6 +33,11 @@ import customIcons from "./components/customIcons";
 //import breakpoints from "assets/theme/base/breakpoints";
 import prompts from "./components/prompttexts";
 import SummariesSidenav from "./sidenavsummaries";
+
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, collection } from "firebase/firestore";
+import "firebase.js"
+import { Icon } from "@mui/material";
 
 
 
@@ -98,6 +103,7 @@ const initialState = {
 
 
 
+const db = getFirestore();
 
 
 
@@ -106,7 +112,8 @@ function RecordingAudio() {
     const [transcript, setTranscript] = useState({ id: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [summaries, setSummaries] = useState({});
-
+    const [patientName, setPatientName] = useState(''); 
+    const [userId, setUserId] = useState(null); 
 
 
     // States for each controller card
@@ -119,6 +126,41 @@ function RecordingAudio() {
     const [textFormatting, setTextFormatting] = useState(localStorage.getItem('textFormatting') === 'true');
     const [punctuation, setPunctuation] = useState(localStorage.getItem('punctuation') === 'true');
     const [selectedPrompts, setSelectedPrompts] = useState({})
+
+
+    useEffect(() => {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // Set the UID of the logged-in user
+            setUserId(user.uid);
+          } else {
+            // Handle user not logged in
+            console.log("No user logged in");
+          }
+        });
+    }, []);
+
+    // Function to save summaries to Firestore
+    const saveSummariesToFirestore = async () => {
+        if (!userId || !patientName) {
+            console.error("User ID or patient name missing");
+            return;
+        }
+
+        try {
+            // Corrected reference to the summaries subcollection
+            const summariesDocRef = doc(db, `users/${userId}/summaries`, patientName);
+            await setDoc(summariesDocRef, {
+                transcript: transcript.text,
+                summaries: summaries,
+                timestamp: new Date() // Optional: Adds a timestamp
+            });
+            console.log("Summaries saved successfully");
+        } catch (error) {
+            console.error("Error saving summaries:", error);
+        }
+    };
 
     // Function to update the selected prompts from PromptSettings
     const handleUpdateSelectedPrompts = (newSelectedPrompts) => {
@@ -151,7 +193,16 @@ function RecordingAudio() {
             }
     
             console.log('Generated Summaries:', generatedSummaries);
-            setSummaries(generatedSummaries); // Assuming this sets the state with all generated summaries
+            setSummaries(generatedSummaries); 
+            // Save summaries to Firestore
+            if (userId && patientName) {
+                const summariesDocRef = doc(db, `users/${userId}/summaries`, patientName);
+                await setDoc(summariesDocRef, { summaries: generatedSummaries, transcript: transcript.text });
+                console.log("Summaries saved to Firestore");
+            } else {
+                console.log("User ID or Patient Name missing, cannot save summaries");
+            }
+            saveSummariesToFirestore();
         } catch (error) {
             console.error('Error during request:', error);
         }
@@ -192,7 +243,7 @@ function RecordingAudio() {
         localStorage.setItem('punctuation', !punctuation);
     };
 
-    useEffect(() => {
+    useEffect(() => {  
         const interval = setInterval(async () => {
             if (transcript.id && transcript.status !== 'completed' ) {
                 try {
@@ -227,7 +278,7 @@ function RecordingAudio() {
         }
     }, [transcript]);*/
 
-
+  
     const handleAudioStop = (data) => {
         setAudioDetails(data);
     };
@@ -271,6 +322,16 @@ function RecordingAudio() {
       };
 
     const handleAudioUpload = async (audioFile) => {
+        if (!patientName || patientName.trim() === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Patient Name',
+                text: 'Please enter the name of the patient before uploading.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return; // Stop the function if no patient name is provided
+        }
         setIsLoading(true);
         showSnackbar("Your file is being processed!", "Sit back and relax for a minute or two ;)");
       
@@ -420,7 +481,7 @@ function RecordingAudio() {
                                                 handleAudioUpload={handleAudioUpload}
                                                 handleReset={handleReset}
                                             />
-                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Name of the Patient" />
+                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Name of the Patient" value={patientName} onChange={(e) => setPatientName(e.target.value)} />
                                         </SoftBox>
                                     </SoftBox>
                                 </Grid>
@@ -532,9 +593,11 @@ function RecordingAudio() {
                                         < Grid item xs={12} lg={12}>
                                             < PromptSettings />
                                         </Grid>
-                                        < Grid item xs={12} lg={12} textAlign={'center'} mb={1} mt={1} >
-                                            < SoftButton sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} >
-                                                Add a new prompt
+                                        < Grid item xs={12} lg={12} textAlign={'right'} mb={1} mt={1} >
+                                            < SoftButton size='small' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} >
+                                                <Icon sx={{ fontWeight: 'bold', color: ({ palette: { dark} }) => dark.main}} >
+                                                    add
+                                                </Icon>
                                             </SoftButton>
                                         </Grid>
                                     </SoftBox>
@@ -547,28 +610,40 @@ function RecordingAudio() {
             {
                 Object.keys(summaries).length > 0 ? (
                     <SoftBox mt={4} mb={4} sx={{
-                        background: 'rgb(245, 245, 245)', // This is a light gray color close to white
+                        background: '#e9ecef', // This is a light gray color close to white
                         borderRadius: '0.5rem',
                         boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
                         }}
                     >
-                    <Card raised>
+                    <Card raised >
                         <Grid container spacing={3} alignItems="stretch">
                         {/* Sidenav */}
-                        <Grid item xs={9} lg={3.5} sx={{ 
+                        <Grid item xs={9} lg={3} sx={{ 
                             display: 'flex', 
                             flexDirection: 'column', 
-                            overflowY: 'auto', 
+                            overflowY: 'visible', 
                             maxHeight: '600px',
                             mt: 2,
-                            ml: 2,
+                            ml: 3,
+                            
                             
                             }}>
                             <SummariesSidenav summaries={summaries} onSummarySelect={handleSummarySelect} />
+
+                                < SoftButton 
+                                sx={{
+                                    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+                                    alignSelf:'flex-start',
+                                    mt: 47
+                            
+                                }} >
+                                    Re-Generate All 
+                                </SoftButton>
+
                         </Grid>
 
                         {/* Summaries */}
-                        <Grid item xs={11} lg={8}>
+                        <Grid item xs={11} lg={8.5}>
                         <SoftBox p={2} sx={{ maxHeight: '600px', overflowY: 'auto' }}>
                             {Object.entries(summaries).map(([promptType, summaryText], index) => (
                             <Card key={index} id={promptType} sx={{ mb: 2, p: 2, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}> {/* Add margin-bottom and padding */}

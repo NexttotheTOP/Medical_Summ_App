@@ -70,7 +70,7 @@ function SummariesSidenav({ summaries, onSummarySelect }) {
      sx={{
        borderRadius: ({ borders: { borderRadius } }) => borderRadius.lg,
        position: "sticky",
-       top: "1%",
+       top: "3%",
        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
        
      }}
