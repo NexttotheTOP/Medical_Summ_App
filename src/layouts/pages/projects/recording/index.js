@@ -35,7 +35,7 @@ import prompts from "./components/prompttexts";
 import SummariesSidenav from "./sidenavsummaries";
 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, collection } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
 import "firebase.js"
 import { Icon } from "@mui/material";
 
@@ -116,6 +116,8 @@ function RecordingAudio() {
     const [sessionName, setSessionName] = useState('');
     const [existingPatients, setExistingPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState('');
+    const [patientTab, setPatientTab] = useState(0);
+
 
 
     // States for each controller card
@@ -129,19 +131,31 @@ function RecordingAudio() {
     const [punctuation, setPunctuation] = useState(localStorage.getItem('punctuation') === 'true');
     const [selectedPrompts, setSelectedPrompts] = useState({})
 
+    const handlePatientTabChange = (event, newValue) => {
+        setPatientTab(newValue);
+    };
+
 
     useEffect(() => {
         const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
           if (user) {
             // Set the UID of the logged-in user
             setUserId(user.uid);
+    
+            // Fetch existing patients
+            const db = getFirestore();
+            const userDocRef = doc(db, "users", user.uid);
+            const patientsSnapshot = await getDocs(collection(userDocRef, "summaries"));
+            const patients = patientsSnapshot.docs.map(doc => doc.id); // doc.id is the patientName
+            setExistingPatients(patients);
           } else {
             // Handle user not logged in
             console.log("No user logged in");
           }
         });
     }, []);
+
 
     const handlePatientSelection = (event) => {
         setSelectedPatient(event.target.value);
@@ -498,13 +512,54 @@ function RecordingAudio() {
                                                 handleAudioUpload={handleAudioUpload}
                                                 handleReset={handleReset}
                                             />
-                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Name of the Patient" value={patientName} onChange={(e) => setPatientName(e.target.value)} />
-                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Title of today's visit" value={sessionName} onChange={(e) => setSessionName(e.target.value)} />
+                                            
+                                            
                                         </SoftBox>
                                     </SoftBox>
                                 </Grid>
+                        
                             </SoftBox>
                         </Card>
+                        <SoftBox mt={3} >
+                        <Card sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+                            <SoftBox p={2}>
+                                <SoftBox sx={{width: '70%'}} >
+                                    <AppBar position="static">
+                                        <Tabs value={patientTab} onChange={handlePatientTabChange} aria-label="Patient tabs">
+                                            <Tab label="New" style={{ fontSize: '0.8rem' }} />
+                                            <Tab label="Patients" style={{ fontSize: '0.8rem' }} />
+                                        </Tabs>
+                                    </AppBar>
+                                </SoftBox>
+                                {patientTab === 0 && (
+                                    <SoftBox p={2} sx={{ display: 'flex', gap: '10px' }}>
+                                        <SoftInput 
+                                            sx={{ flex: 1, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}
+                                            placeholder="Name of the New Patient" 
+                                            value={patientName} 
+                                            onChange={(e) => setPatientName(e.target.value)} 
+                                        />
+                                        <SoftInput 
+                                            sx={{ flex: 1, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} 
+                                            placeholder="Title of today's visit" 
+                                            value={sessionName} 
+                                            onChange={(e) => setSessionName(e.target.value)} 
+                                        />
+                                    </SoftBox>
+                                )}
+                                {patientTab === 1 && (
+                                    <SoftBox p={2}>
+                                        <select value={selectedPatient} onChange={handlePatientSelection}>
+                                            <option value="">Select a patient</option>
+                                            {existingPatients.map(patient => (
+                                                <option key={patient} value={patient}>{patient}</option>
+                                            ))}
+                                        </select>
+                                    </SoftBox>
+                                )} 
+                            </SoftBox>
+                        </Card>
+                        </SoftBox>
                     </Grid>
                     <Grid item xs={12} lg={8}>
                         <Card sx={{
