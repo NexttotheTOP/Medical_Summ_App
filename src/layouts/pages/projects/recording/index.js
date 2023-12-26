@@ -71,7 +71,6 @@ const initialState = {
     } catch (error) {
       console.error("Error generating summary:", error);
       // Handle error appropriately
-    }
   };
   
 
@@ -114,6 +113,9 @@ function RecordingAudio() {
     const [summaries, setSummaries] = useState({});
     const [patientName, setPatientName] = useState(''); 
     const [userId, setUserId] = useState(null); 
+    const [sessionName, setSessionName] = useState('');
+    const [existingPatients, setExistingPatients] = useState([]);
+    const [selectedPatient, setSelectedPatient] = useState('');
 
 
     // States for each controller card
@@ -141,6 +143,10 @@ function RecordingAudio() {
         });
     }, []);
 
+    const handlePatientSelection = (event) => {
+        setSelectedPatient(event.target.value);
+    };
+
     // Function to save summaries to Firestore
     const saveSummariesToFirestore = async () => {
         if (!userId || !patientName) {
@@ -150,8 +156,8 @@ function RecordingAudio() {
 
         try {
             // Corrected reference to the summaries subcollection
-            const summariesDocRef = doc(db, `users/${userId}/summaries`, patientName);
-            await setDoc(summariesDocRef, {
+            const visitRef = doc(db, `users/${userId}/patients/${patientName}/visits/${sessionName}`);
+            await setDoc(visitRef, {
                 transcript: transcript.text,
                 summaries: summaries,
                 timestamp: new Date() // Optional: Adds a timestamp
@@ -332,6 +338,17 @@ function RecordingAudio() {
             });
             return; // Stop the function if no patient name is provided
         }
+    
+        if (!sessionName || sessionName.trim() === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Visit Name',
+                text: 'Please enter a name for this visit/session before uploading.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return; // Stop the function if no visit name is provided
+        }
         setIsLoading(true);
         showSnackbar("Your file is being processed!", "Sit back and relax for a minute or two ;)");
       
@@ -373,7 +390,7 @@ function RecordingAudio() {
           showSnackbar("Something went wrong with the upload!", "Please try uploading the conversation again.");
         } finally {
           setIsLoading(false);
-          showSnackbar("Your file is ready!", "Recording is temporarily saved.")
+          
         }
     };
 
@@ -482,6 +499,7 @@ function RecordingAudio() {
                                                 handleReset={handleReset}
                                             />
                                             <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Name of the Patient" value={patientName} onChange={(e) => setPatientName(e.target.value)} />
+                                            <SoftInput sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} placeholder="Title of today's visit" value={sessionName} onChange={(e) => setSessionName(e.target.value)} />
                                         </SoftBox>
                                     </SoftBox>
                                 </Grid>
@@ -663,10 +681,10 @@ function RecordingAudio() {
                     </SoftBox>
                 ) : null
             }
-            <SoftBox>
+            <SoftBox >
                 <Grid container spacing={3} justifyContent="center">
                 <Grid item xs={11} lg={11}> {/* Adjust lg value as needed for the transcription box */}
-                    <Card>
+                    <Card sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}}>
                         <SoftBox display="flex" flexDirection="column" textAlign='center' p={2}> 
                             <SoftTypography variant="h5" color="text" textAlign="center" mb={2}>
                                 Generated Transcript

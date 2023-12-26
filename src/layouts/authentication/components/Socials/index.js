@@ -100,8 +100,8 @@ function Socials({ action }) {
   );
 }
 
-Socials.PropTypes = {
+Socials.propTypes = {
   action: PropTypes.oneOf(['signup', 'signin']).isRequired
-};
+}; 
 
 export default Socials;
