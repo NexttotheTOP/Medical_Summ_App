@@ -33,9 +33,10 @@ import customIcons from "./components/customIcons";
 //import breakpoints from "assets/theme/base/breakpoints";
 import prompts from "./components/prompttexts";
 import SummariesSidenav from "./sidenavsummaries";
+import SoftSelect from "components/SoftSelect";
 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, addDoc } from "firebase/firestore";
 import "firebase.js"
 import { Icon } from "@mui/material";
 
@@ -117,6 +118,8 @@ function RecordingAudio() {
     const [existingPatients, setExistingPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState('');
     const [patientTab, setPatientTab] = useState(0);
+    const [isAddingNew, setIsAddingNew] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
 
 
@@ -131,28 +134,57 @@ function RecordingAudio() {
     const [punctuation, setPunctuation] = useState(localStorage.getItem('punctuation') === 'true');
     const [selectedPrompts, setSelectedPrompts] = useState({})
 
+    const handleSearchChange = (event) => {
+        setSearchText(event.target.value);
+    };
+
+    // Function to filter patients based on search text
+    const getFilteredPatients = () => {
+        if (!searchText) {
+            return existingPatients;
+        }
+        return existingPatients.filter(patient =>
+            patient.toLowerCase().includes(searchText.toLowerCase())
+        );
+    };
+
+    // Filtered patients for SoftSelect
+    const filteredPatients = getFilteredPatients();
+
     const handlePatientTabChange = (event, newValue) => {
         setPatientTab(newValue);
     };
 
+    const handleAddNewPatient = () => {
+        setIsAddingNew(true);
+        setSelectedPatient(''); // Clear previous selection
+    };
+
+    const handleSoftSelectChange = (selectedOption) => {
+        setSelectedPatient(selectedOption.value);
+    };
 
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            // Set the UID of the logged-in user
-            setUserId(user.uid);
+            if (user) {
+                setUserId(user.uid);
     
-            // Fetch existing patients
-            const db = getFirestore();
-            const userDocRef = doc(db, "users", user.uid);
-            const patientsSnapshot = await getDocs(collection(userDocRef, "summaries"));
-            const patients = patientsSnapshot.docs.map(doc => doc.id); // doc.id is the patientName
-            setExistingPatients(patients);
-          } else {
-            // Handle user not logged in
-            console.log("No user logged in");
-          }
+                // Initialize Firestore and reference to the user's summaries
+                const db = getFirestore();
+                const summariesRef = collection(db, `users/${user.uid}/summaries`);
+    
+                // Fetch all documents under the summaries collection
+                try {
+                    const summariesSnapshot = await getDocs(summariesRef);
+                    const patients = summariesSnapshot.docs.map(doc => doc.id); // Extracts patient names/IDs
+                    setExistingPatients(patients);
+                } catch (error) {
+                    console.error("Error fetching patients:", error);
+                }
+            } else {
+                console.log("No user logged in");
+            }
         });
     }, []);
 
@@ -162,25 +194,39 @@ function RecordingAudio() {
     };
 
     // Function to save summaries to Firestore
-    const saveSummariesToFirestore = async () => {
-        if (!userId || !patientName) {
+    /*const saveSummariesToFirestore = async () => {
+        if (!userId || (!patientName && !selectedPatient)) {
             console.error("User ID or patient name missing");
             return;
         }
 
         try {
-            // Corrected reference to the summaries subcollection
-            const visitRef = doc(db, `users/${userId}/patients/${patientName}/visits/${sessionName}`);
-            await setDoc(visitRef, {
-                transcript: transcript.text,
-                summaries: summaries,
-                timestamp: new Date() // Optional: Adds a timestamp
-            });
+            let patientToUse = isAddingNew ? patientName : selectedPatient;
+            
+            // Check if the patient is new or existing
+            if (existingPatients.includes(patientToUse)) {
+                // Existing patient, add a new visit
+                const visitDocRef = doc(db, `users/${userId}/summaries/${patientToUse}/visits/${sessionName}`);
+                await setDoc (visitDocRef, {
+                    transcript: transcript.text,
+                    summaries: summaries,
+                    timestamp: new Date()
+                });
+            } else {
+                // New patient, create new patient and visit
+                const visitRef = doc(db, `users/${userId}/summaries/${patientToUse}/visits/${sessionName}`);
+                await setDoc(visitRef, {
+                    transcript: transcript.text,
+                    summaries: summaries,
+                    timestamp: new Date()
+                });
+            }
             console.log("Summaries saved successfully");
         } catch (error) {
             console.error("Error saving summaries:", error);
         }
-    };
+    };*/
+
 
     // Function to update the selected prompts from PromptSettings
     const handleUpdateSelectedPrompts = (newSelectedPrompts) => {
@@ -215,14 +261,40 @@ function RecordingAudio() {
             console.log('Generated Summaries:', generatedSummaries);
             setSummaries(generatedSummaries); 
             // Save summaries to Firestore
-            if (userId && patientName) {
-                const summariesDocRef = doc(db, `users/${userId}/summaries`, patientName);
-                await setDoc(summariesDocRef, { summaries: generatedSummaries, transcript: transcript.text });
-                console.log("Summaries saved to Firestore");
-            } else {
-                console.log("User ID or Patient Name missing, cannot save summaries");
+            if (!userId || (!patientName && !selectedPatient)) {
+                console.error("User ID or patient name missing");
+                return;
             }
-            saveSummariesToFirestore();
+    
+            try {
+                let patientToUse = isAddingNew ? patientName : selectedPatient;
+                
+                // Check if the patient is new or existing
+                if (existingPatients.includes(patientToUse)) {
+                    // Existing patient, add a new visit
+                    const visitDocRef = doc(db, `users/${userId}/summaries/${patientToUse}/visits/${sessionName}`);
+                    await setDoc (visitDocRef, {
+                        transcript: transcript.text,
+                        summaries: generatedSummaries,
+                        timestamp: new Date()
+                    });
+                } else {
+                    // New patient, create new patient and visit
+                    const visitRef = doc(db, `users/${userId}/summaries/${patientToUse}/visits/${sessionName}`);
+                    await setDoc(visitRef, {
+                        transcript: transcript.text,
+                        summaries: generatedSummaries,
+                        timestamp: new Date()
+                    });
+                }
+
+                const patientDocRef = doc(db, `users/${userId}/summaries/${patientToUse}`);
+                await setDoc(patientDocRef, { lastVisit: new Date() }, { merge: true });
+                console.log("Summaries saved successfully");
+            } catch (error) {
+                console.error("Error saving summaries:", error);
+            }
+            // saveSummariesToFirestore();
         } catch (error) {
             console.error('Error during request:', error);
         }
@@ -342,15 +414,15 @@ function RecordingAudio() {
       };
 
     const handleAudioUpload = async (audioFile) => {
-        if (!patientName || patientName.trim() === '') {
+        if ((!patientName || patientName.trim() === '') && !selectedPatient) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Missing Patient Name',
-                text: 'Please enter the name of the patient before uploading.',
+                text: 'Please enter the name of a new patient or select an existing one before uploading.',
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'OK'
             });
-            return; // Stop the function if no patient name is provided
+            return; // Stop the function if no patient name is provided or selected
         }
     
         if (!sessionName || sessionName.trim() === '') {
@@ -522,41 +594,37 @@ function RecordingAudio() {
                         </Card>
                         <SoftBox mt={3} >
                         <Card sx={{ boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
-                            <SoftBox p={2}>
-                                <SoftBox sx={{width: '70%'}} >
-                                    <AppBar position="static">
-                                        <Tabs value={patientTab} onChange={handlePatientTabChange} aria-label="Patient tabs">
-                                            <Tab label="New" style={{ fontSize: '0.8rem' }} />
-                                            <Tab label="Patients" style={{ fontSize: '0.8rem' }} />
-                                        </Tabs>
-                                    </AppBar>
+                            <SoftBox p={2} style={{ position: 'relative', zIndex: 2 }}>
+                                <SoftBox display="flex" justifyContent="space-between" alignItems="center">
+                                    <SoftSelect placeholder={'Search or Select Patient'}
+                                        defaultValue={selectedPatient ? { value: selectedPatient, label: selectedPatient } : ''}
+                                        options={filteredPatients.map(patient => ({ value: patient, label: patient }))}
+                                        onChange={handleSoftSelectChange}
+                                        size="medium"
+                                        style={{ width: '70%' }}
+                                    />
+                                    < SoftButton size='medium' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} onClick={handleAddNewPatient} >
+                                        <Icon sx={{ fontWeight: 'bold', color: ({ palette: { dark} }) => dark.main}}>
+                                            add
+                                        </Icon>
+                                    </SoftButton>
                                 </SoftBox>
-                                {patientTab === 0 && (
-                                    <SoftBox p={2} sx={{ display: 'flex', gap: '10px' }}>
-                                        <SoftInput 
-                                            sx={{ flex: 1, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}
-                                            placeholder="Name of the New Patient" 
-                                            value={patientName} 
-                                            onChange={(e) => setPatientName(e.target.value)} 
-                                        />
-                                        <SoftInput 
-                                            sx={{ flex: 1, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'}} 
-                                            placeholder="Title of today's visit" 
-                                            value={sessionName} 
-                                            onChange={(e) => setSessionName(e.target.value)} 
-                                        />
-                                    </SoftBox>
+                                {/* Conditional New Patient Input */}
+                                {isAddingNew && (
+                                    <SoftInput 
+                                        placeholder="Name of the New Patient" 
+                                        value={patientName}
+                                        onChange={(e) => setPatientName(e.target.value)}
+                                        style={{ marginTop: '10px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}
+                                    />
                                 )}
-                                {patientTab === 1 && (
-                                    <SoftBox p={2}>
-                                        <select value={selectedPatient} onChange={handlePatientSelection}>
-                                            <option value="">Select a patient</option>
-                                            {existingPatients.map(patient => (
-                                                <option key={patient} value={patient}>{patient}</option>
-                                            ))}
-                                        </select>
-                                    </SoftBox>
-                                )} 
+                                {/* Visit Title Input */}
+                                <SoftInput 
+                                    placeholder="Title of today's visit" 
+                                    value={sessionName}
+                                    onChange={(e) => setSessionName(e.target.value)}
+                                    style={{ marginTop: '30px' }}
+                                />
                             </SoftBox>
                         </Card>
                         </SoftBox>

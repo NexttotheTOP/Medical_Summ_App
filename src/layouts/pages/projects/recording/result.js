@@ -4,6 +4,7 @@ import Highlighted from './highlighted';
 
 
 function Result({transcript}) {
+    
     return (
         <div>
             <SoftTypography>
