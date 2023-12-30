@@ -21,52 +21,84 @@ import AppBar from "@mui/material/AppBar";
 function VisitDetails({ visit }) {
 
   const [currentTab, setCurrentTab] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
 
+  const toggleDetails = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const formatDate = (timestamp) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(timestamp).toLocaleDateString(undefined, options);
+  };
+
   return (
     <Card>
-      <SoftBox p={2}>
-        <SoftTypography variant="subtitle2">Session: {visit.id}</SoftTypography>
-        <SoftTypography variant="body2">{visit.data.summary}</SoftTypography>
+      <SoftBox p={2}  onClick={toggleDetails} sx={{ cursor: 'pointer' }}>
+        <SoftTypography variant="subtitle2">{visit.id}</SoftTypography>
+        {/*<SoftTypography variant="body2">{visit.data.summary}</SoftTypography>*/}
         {/* Render more details as needed */}
       </SoftBox>
-      <AppBar position="static">
-        <Tabs value={currentTab} onChange={handleTabChange} aria-label="Visit tabs">
-          <Tab label="Summaries" />
-          <Tab label="Transcript" />
-        </Tabs>
-      </AppBar>
-
-      {currentTab === 0 && (
-        // Render Summaries
-        <SoftBox>
-          {Object.entries(visit.data.summaries).map(([summaryName, summaryDetails], index) => (
-            <SoftBox key={index}>
-              <SoftTypography variant="subtitle2">{summaryName}</SoftTypography>
-              <SoftTypography variant="body2">{summaryDetails.response}</SoftTypography>
+      {isExpanded && (
+         <SoftBox>
+          <SoftBox display="flex" justifyContent="space-between" alignItems="center" pt={0} px={2} mb={2} mt={5}>
+            {/* Info Details */}
+            <SoftBox>
+              <SoftTypography variant="h6" pl={2}>
+                {visit.id} on {formatDate(visit.timestamp)}
+              </SoftTypography>
             </SoftBox>
-          ))}
-        </SoftBox>
-      )}
 
-      {currentTab === 1 && (
-        // Render Transcript
-        <SoftBox>
-          <SoftTypography variant="body2">{visit.data.transcript}</SoftTypography>
+            {/* AppBar with Tabs */}
+            <SoftBox pr={2} width='50%'>
+              <AppBar position="static" >
+                <Tabs value={currentTab} onChange={handleTabChange} aria-label="Visit tabs">
+                  <Tab label="Summaries" />
+                  <Tab label="Transcript" />
+                </Tabs>
+              </AppBar>
+            </SoftBox>
+          </SoftBox>
+
+          {currentTab === 0 && (
+            // Render Summaries
+            <SoftBox sx={{ padding: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+              {Object.entries(visit.data.summaries).map(([summaryName, summaryDetails], index) => (
+                <Card key={index} sx={{ marginBottom: '20px', padding: '16px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+                  <SoftBox p={2} sx={{ padding: '8px' }}>
+                    <SoftTypography variant="subtitle2" sx={{ padding: '8px' }}>{summaryName}</SoftTypography>
+                    <SoftTypography variant="body2" sx={{ padding: '8px' }}>{summaryDetails.response}</SoftTypography>
+                  </SoftBox>
+                </Card>
+              ))}
+            </SoftBox>
+          )}
+
+          {currentTab === 1 && (
+            // Render Transcript
+            <SoftBox sx={{ padding: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+              <Card sx={{ marginBottom: '20px', padding: '16px', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+               <SoftTypography variant="body2">{visit.data.transcript}</SoftTypography>
+              </Card>
+            </SoftBox>
+          )}
         </SoftBox>
       )}
     </Card>
+
   );
 }
 
 VisitDetails.propTypes = {
   visit: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    data: PropTypes.object.isRequired,       // Assuming date is a string
-    summary: PropTypes.string,    // Assuming summary is a string
+    data: PropTypes.object.isRequired,       
+    summary: PropTypes.string,    
+    timestamp: PropTypes.string.isRequired,
     // Add more properties as needed
   }).isRequired,
 };
@@ -164,12 +196,12 @@ function PatientDataTable() {
         </Card>
         {patientVisits.length > 0 && (
           <SoftBox pt={3}>
-            <SoftTypography variant="h6" fontWeight="medium" mb={2} sx={{ marginLeft: '11%' }} >
+            <SoftTypography variant="h6" fontWeight="medium" mb={2} sx={{ marginLeft: '6%' }} >
               Visits for {selectedPatient}
             </SoftTypography>
             {patientVisits.map((visit, index) => (
               <SoftBox mb={1} key={index} display="flex" justifyContent="center" width="100%">
-                <SoftBox width="80%">
+                <SoftBox width="90%">
                   <VisitDetails visit={visit} />
                 </SoftBox>
             </SoftBox>

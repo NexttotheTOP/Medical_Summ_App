@@ -284,7 +284,7 @@ function RecordingAudio() {
                     await setDoc (visitDocRef, {
                         transcript: transcript.text,
                         summaries: generatedSummaries,
-                        timestamp: new Date()
+                        timestamp: formatDate( new Date())
                     });
                 } else {
                     // New patient, create new patient and visit
@@ -292,7 +292,7 @@ function RecordingAudio() {
                     await setDoc(visitRef, {
                         transcript: transcript.text,
                         summaries: generatedSummaries,
-                        timestamp: new Date()
+                        timestamp: formatDate( new Date())
                     });
                 }
 
