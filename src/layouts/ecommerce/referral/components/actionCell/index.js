@@ -20,29 +20,33 @@ import Tooltip from "@mui/material/Tooltip";
 // Soft UI Dashboard PRO React components
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
+import PropTypes from 'prop-types';
 
-function ActionCell() {
+function ActionCell({ onPreview }) {
   return (
     <SoftBox display="flex" alignItems="center">
       <SoftTypography variant="body1" color="secondary" sx={{ cursor: "pointer", lineHeight: 0 }}>
-        <Tooltip title="Preview product" placement="top">
-          <Icon>visibility</Icon>
+        <Tooltip title="Preview Patient" placement="top">
+          <Icon onClick={onPreview}>visibility</Icon>
         </Tooltip>
       </SoftTypography>
       <SoftBox mx={2}>
         <SoftTypography variant="body1" color="secondary" sx={{ cursor: "pointer", lineHeight: 0 }}>
-          <Tooltip title="Edit product" placement="top">
+          <Tooltip title="Edit Patient" placement="top">
             <Icon>edit</Icon>
           </Tooltip>
         </SoftTypography>
       </SoftBox>
       <SoftTypography variant="body1" color="secondary" sx={{ cursor: "pointer", lineHeight: 0 }}>
-        <Tooltip title="Delete product" placement="left">
+        <Tooltip title="Delete Patient" placement="left">
           <Icon>delete</Icon>
         </Tooltip>
       </SoftTypography>
     </SoftBox>
   );
 }
+ActionCell.propTypes = {
+  onPreview: PropTypes.func.isRequired, // Add this line
+};
 
 export default ActionCell;

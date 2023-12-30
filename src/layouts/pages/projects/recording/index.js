@@ -138,6 +138,14 @@ function RecordingAudio() {
         setSearchText(event.target.value);
     };
 
+    // Function to format the date to dd/MM/yyyy
+    function formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
     // Function to filter patients based on search text
     const getFilteredPatients = () => {
         if (!searchText) {
@@ -289,7 +297,8 @@ function RecordingAudio() {
                 }
 
                 const patientDocRef = doc(db, `users/${userId}/summaries/${patientToUse}`);
-                await setDoc(patientDocRef, { lastVisit: new Date() }, { merge: true });
+                const dateLastVisit = formatDate( new Date());
+                await setDoc(patientDocRef, { lastVisit: dateLastVisit }, { merge: true });
                 console.log("Summaries saved successfully");
             } catch (error) {
                 console.error("Error saving summaries:", error);
