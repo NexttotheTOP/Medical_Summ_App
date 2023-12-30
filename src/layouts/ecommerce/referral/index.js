@@ -10,9 +10,22 @@ import Card from "@mui/material/Card";
 import SoftTypography from "components/SoftTypography";
 import ActionCell from "./components/actionCell";
 import PropTypes from 'prop-types';
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import AppBar from "@mui/material/AppBar";
+
+
+
 
 // Define VisitDetails and PatientActionCell outside of PatientDataTable
 function VisitDetails({ visit }) {
+
+  const [currentTab, setCurrentTab] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
+  };
+
   return (
     <Card>
       <SoftBox p={2}>
@@ -20,6 +33,31 @@ function VisitDetails({ visit }) {
         <SoftTypography variant="body2">{visit.data.summary}</SoftTypography>
         {/* Render more details as needed */}
       </SoftBox>
+      <AppBar position="static">
+        <Tabs value={currentTab} onChange={handleTabChange} aria-label="Visit tabs">
+          <Tab label="Summaries" />
+          <Tab label="Transcript" />
+        </Tabs>
+      </AppBar>
+
+      {currentTab === 0 && (
+        // Render Summaries
+        <SoftBox>
+          {Object.entries(visit.data.summaries).map(([summaryName, summaryDetails], index) => (
+            <SoftBox key={index}>
+              <SoftTypography variant="subtitle2">{summaryName}</SoftTypography>
+              <SoftTypography variant="body2">{summaryDetails.response}</SoftTypography>
+            </SoftBox>
+          ))}
+        </SoftBox>
+      )}
+
+      {currentTab === 1 && (
+        // Render Transcript
+        <SoftBox>
+          <SoftTypography variant="body2">{visit.data.transcript}</SoftTypography>
+        </SoftBox>
+      )}
     </Card>
   );
 }
@@ -32,6 +70,7 @@ VisitDetails.propTypes = {
     // Add more properties as needed
   }).isRequired,
 };
+
 
 function PatientActionCell({ row, onPreview }) {
   return (
