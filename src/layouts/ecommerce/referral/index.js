@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getFirestore, collection, getDocs, doc, query } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, query, deleteDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -31,15 +31,11 @@ function VisitDetails({ visit }) {
     setIsExpanded(!isExpanded);
   };
 
-  const formatDate = (timestamp) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(timestamp).toLocaleDateString(undefined, options);
-  };
 
   return (
     <Card>
       <SoftBox p={2}  onClick={toggleDetails} sx={{ cursor: 'pointer' }}>
-        <SoftTypography variant="subtitle2">{visit.id}</SoftTypography>
+        <SoftTypography variant="subtitle2">{visit.id} on {visit.data.timestamp}</SoftTypography>
         {/*<SoftTypography variant="body2">{visit.data.summary}</SoftTypography>*/}
         {/* Render more details as needed */}
       </SoftBox>
@@ -49,7 +45,7 @@ function VisitDetails({ visit }) {
             {/* Info Details */}
             <SoftBox>
               <SoftTypography variant="h6" pl={2}>
-                {visit.id} on {formatDate(visit.timestamp)}
+                {visit.id} on {visit.data.timestamp}
               </SoftTypography>
             </SoftBox>
 
@@ -104,10 +100,10 @@ VisitDetails.propTypes = {
 };
 
 
-function PatientActionCell({ row, onPreview }) {
+function PatientActionCell({ row, onPreview, onDelete }) {
   return (
     <div style={{ textAlign: 'right' }}>
-      <ActionCell onPreview={() => onPreview(row.original.name)} />
+      <ActionCell onPreview={() => onPreview(row.original.name)} onDelete={() => onDelete(row.original.name)} />
     </div>
   );
 }
@@ -119,6 +115,7 @@ PatientActionCell.propTypes = {
     }).isRequired,
   }).isRequired,
   onPreview: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 function PatientDataTable() {
@@ -168,15 +165,32 @@ function PatientDataTable() {
     }
   };
 
+  const handleDeletePatient = async (patientId) => {
+    setSelectedPatient(patientId);
+
+    const patientDocRef = doc(db, `users/${userId}/summaries/${patientId}`);
+    console.log("Deleting patient:", patientId);
+
+    try {
+      await deleteDoc(patientDocRef);
+      console.log("Patient deleted successfully:", patientId);
+      // Remove the patient from the state or re-fetch the patient list
+      setPatients(prevPatients => prevPatients.filter(patient => patient.name !== patientId));
+    } catch (error) {
+      console.error("Error deleting patient:", error);
+      // Handle any errors, such as showing an error message to the user
+    }
+  };
+
   const dataTableData = {
     columns: [
       { Header: "Patient Name", accessor: "name", width: "40%" },
       { Header: "Last Visit", accessor: "lastVisit", width: "40%" },
       { 
-        Header: () => <div style={{ textAlign: 'right' }}>Action</div>,
+        Header: () => <div style={{ textAlign: 'center' }}>Action</div>,
         accessor: "action", 
-        Cell: ({ row }) => <PatientActionCell row={row} onPreview={handlePreview} />, // eslint-disable-line react/prop-types
-        width: '30%'
+        Cell: ({ row }) => ( <PatientActionCell row={row} onPreview={handlePreview} onDelete={handleDeletePatient} />), // eslint-disable-line react/prop-types
+        width: '10%'
       },
     ],
     rows: patients.map((patient) => ({ ...patient, action: "action" })),

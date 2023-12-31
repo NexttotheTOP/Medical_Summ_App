@@ -16,13 +16,32 @@ Coded by www.creative-tim.com
 // @mui material components
 import Icon from "@mui/material/Icon";
 import Tooltip from "@mui/material/Tooltip";
+import Swal from 'sweetalert2';
+
 
 // Soft UI Dashboard PRO React components
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import PropTypes from 'prop-types';
 
-function ActionCell({ onPreview }) {
+function ActionCell({ onPreview, onDelete }) {
+
+  const handleDeleteClick = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onDelete();
+      }
+    });
+  };
+
   return (
     <SoftBox display="flex" alignItems="center">
       <SoftTypography variant="body1" color="secondary" sx={{ cursor: "pointer", lineHeight: 0 }}>
@@ -39,14 +58,15 @@ function ActionCell({ onPreview }) {
       </SoftBox>
       <SoftTypography variant="body1" color="secondary" sx={{ cursor: "pointer", lineHeight: 0 }}>
         <Tooltip title="Delete Patient" placement="left">
-          <Icon>delete</Icon>
+          <Icon onClick={handleDeleteClick}>delete</Icon>
         </Tooltip>
       </SoftTypography>
     </SoftBox>
   );
 }
 ActionCell.propTypes = {
-  onPreview: PropTypes.func.isRequired, // Add this line
+  onPreview: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default ActionCell;
