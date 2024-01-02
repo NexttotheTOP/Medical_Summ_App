@@ -570,7 +570,7 @@ function RecordingAudio() {
                                                 '& ._dt3-T': {background: 'white !important'},
                                                 '& ._1dpop': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1) !important' },
                                                 '& ._1ceqH ._1dpop:hover ._3wi1g': {fill: 'lightgray'},
-                                                '& ._1ceqH ._1Yplu ._1Pz2d': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important',
+                                                '& ._1ceqH ._1Yplu ._1Pz2d': {background: '#344767',
                                                 border: '1px solid white', fontWeight: 'bold !important',
                                                 fontSize: '16px', borderRadius: '6px',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'
                                                 },
