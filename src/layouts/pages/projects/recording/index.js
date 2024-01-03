@@ -121,6 +121,7 @@ function RecordingAudio() {
     const [patientTab, setPatientTab] = useState(0);
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
 
 
@@ -135,6 +136,13 @@ function RecordingAudio() {
     const [punctuation, setPunctuation] = useState(localStorage.getItem('punctuation') === 'true');
     const [selectedPrompts, setSelectedPrompts] = useState({})
     const [promptsData, setPromptsData] = useState({});
+    const [newPromptText, setNewPromptText] = useState('');
+    const [newPromptName, setNewPromptName] = useState('');
+    const [isAddPromptOpen, setIsAddPromptOpen] = useState(false);
+
+    const handleAddPromptOpen = () => setIsAddPromptOpen(true);
+    const handleAddPromptClose = () => setIsAddPromptOpen(false);
+
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
@@ -554,6 +562,38 @@ function RecordingAudio() {
       });
     }
     };
+
+    const handleCreatePrompt = async () => {
+        const auth = getAuth();
+        const user = auth.currentUser;
+      
+        if (user && newPromptName.trim()) {
+          const db = getFirestore();
+          const promptsRef = doc(db, `users/${user.uid}/prompts/${newPromptName}`);
+      
+          try {
+           
+            await setDoc(promptsRef, {
+              content: newPromptText  
+            });
+      
+            /*
+            setNewPromptName('');
+            setNewPromptText('');
+            setIsAddPromptOpen(false); */
+            console.log('prompt text new:', newPromptText)
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 6000);
+      
+            // Optionally, refresh the prompts list to show the new prompt
+            // You may need to fetch the prompts again or update the local state
+          } catch (error) {
+            console.error("Error adding new prompt:", error);
+          }
+        } else {
+          console.error("No authenticated user found");
+        }
+    };
       
 
     //<SoftBox pt={4} mb={0.5}>
@@ -591,7 +631,7 @@ function RecordingAudio() {
                                                 '& ._1lB9c': {display: 'none'},
                                                 '& ._f2DT8 span': {color: 'black !important', fontSize: '30px', fontWeight: 'bold'},
                                                 '& ._dt3-T': {background: 'white !important'},
-                                                '& ._1dpop': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1) !important' },
+                                                '& ._1dpop': {background: '#344767', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1) !important' },
                                                 '& ._1ceqH ._1dpop:hover ._3wi1g': {fill: 'lightgray'},
                                                 '& ._1ceqH ._1Yplu ._1Pz2d': {background: '#344767',
                                                 border: '1px solid white', fontWeight: 'bold !important',
@@ -767,11 +807,75 @@ function RecordingAudio() {
                                             < PromptSettings promptsData={promptsData} onUpdatePromptsData={updatePromptsData} />
                                         </Grid>
                                         < Grid item xs={12} lg={12} textAlign={'right'} mb={1} mt={1} >
-                                            < SoftButton size='small' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} >
+                                            {isAddPromptOpen ? (
+                                                <SoftBox mt={3} mb={4} sx={{ textAlign: 'left' }} >
+                                                <Grid container spacing={3} justifyContent="center">
+                                                  <Grid item xs={12} lg={11}>
+                                                    <Card sx={{ overflow: "visible", boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+                                                      <SoftBox p={2} lineHeight={1}>
+                                                        <SoftTypography variant="h6" fontWeight="medium">
+                                                          New Summary
+                                                        </SoftTypography>
+                                                        <SoftTypography variant="button" fontWeight="regular" color="text">
+                                                          Create a new summarization prompt
+                                                        </SoftTypography>
+                                                        <Divider />
+                                                        <SoftBox
+                                                          display="flex"
+                                                          flexDirection="column"
+                                                          justifyContent="flex-end"
+                                                          height="100%"
+                                                        >
+                                                          <SoftBox mb={1} ml={0.5} lineHeight={0} display="inline-block">
+                                                            <SoftTypography component="label" variant="caption" fontWeight="bold">
+                                                              Summary Name
+                                                            </SoftTypography>
+                                                          </SoftBox>
+                                                          <SoftInput placeholder="Assesement and Plan" value={newPromptName} onChange={(e) => setNewPromptName(e.target.value)} />
+                                                        </SoftBox>
+                                                        <SoftBox
+                                                          display="flex"
+                                                          flexDirection="column"
+                                                          justifyContent="flex-end"
+                                                          height="100%"
+                                                        >
+                                                          <SoftBox mb={1} ml={0.5} mt={3} lineHeight={0} display="inline-block">
+                                                            <SoftTypography component="label" variant="caption" fontWeight="bold">
+                                                              Prompt Text
+                                                            </SoftTypography>
+                                                          </SoftBox>
+                                                          <SoftBox mb={1.5} ml={0.5} mt={0.5} lineHeight={0} display="inline-block">
+                                                            <SoftTypography
+                                                              component="label"
+                                                              variant="caption"
+                                                              fontWeight="regular"
+                                                              color="text"
+                                                            >
+                                                              Display link to prompt engineering
+                                                            </SoftTypography>
+                                                          </SoftBox>
+                                                          <SoftInput value={newPromptText} onChange={(e) => setNewPromptText(e.target.value)} />
+                                                        </SoftBox>                                                   
+                                                        <SoftBox display="flex" justifyContent="flex-end" mt={3}>
+                                                        {saveSuccess && <SoftTypography fontWeight="regular" variant="body2" color="text" sx={{ ml: 1 }}>Prompt has been added successfully!</SoftTypography>}
+                                                          <SoftBox mr={1}>
+                                                            <SoftButton onClick={handleAddPromptClose} color="light" size="small">cancel</SoftButton>
+                                                          </SoftBox>
+                                                          <SoftButton onClick={handleCreatePrompt} color="dark" size="small" >create</SoftButton>
+                                                          
+                                                        </SoftBox>
+                                                      </SoftBox>
+                                                    </Card>
+                                                  </Grid>
+                                                </Grid>
+                                              </SoftBox>
+                                            ) : (
+                                            < SoftButton onClick={handleAddPromptOpen} size='small' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} >
                                                 <Icon sx={{ fontWeight: 'bold', color: ({ palette: { dark} }) => dark.main}} >
                                                     add
                                                 </Icon>
                                             </SoftButton>
+                                            )}
                                         </Grid>
                                     </SoftBox>
                                 )}

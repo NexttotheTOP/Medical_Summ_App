@@ -100,7 +100,7 @@ function PromptSettings({ promptsData, onUpdatePromptsData }) {
           onUpdatePromptsData({ ...promptsData, [editingPromptId]: editedText });
   
           setSaveSuccess(true);
-          setTimeout(() => setSaveSuccess(false), 3000);
+          setTimeout(() => setSaveSuccess(false), 6000);
           // Exit editing mode
           //setEditingPromptId(null);
           //setEditedText('');
@@ -174,16 +174,21 @@ function PromptSettings({ promptsData, onUpdatePromptsData }) {
         {editingPromptId && (
                                         <Card sx={{ marginTop: 4, padding: 2, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
                                             <SoftBox sx={{ padding: 1 }}>
-                                            <SoftTypography variant="body2" sx={{ ml: 1, mb: 1}}>Editing: {editingPromptId}</SoftTypography>
-                                            <SoftInput sx={{mb: 2}}
-                                                value={editedText}
-                                                onChange={(e) => setEditedText(e.target.value)}
-                                                multiline
-                                                rows={4}
-                                                fullWidth
-                                            />
-                                            <SoftButton sx={{ background: '#e9ecef' }} onClick={handleSave} >Save Changes</SoftButton>
-                                            {saveSuccess && <SoftTypography variant="body2" color="success" sx={{ ml: 1 }}>Changes saved successfully!</SoftTypography>}
+                                              <SoftBox display="flex" alignItems="center">
+                                                <SoftTypography variant="h6" fontWeight='medium' sx={{ ml: 1, mb: 1}}>Currently editing: </SoftTypography>
+                                                <SoftTypography variant="button" fontWeight="regular" color="text" sx={{ ml: 1, mb: 1}} >{editingPromptId} </SoftTypography>
+                                              </SoftBox>
+                                              <SoftInput sx={{mb: 2, mt: 1}}
+                                                  value={editedText}
+                                                  onChange={(e) => setEditedText(e.target.value)}
+                                                  multiline
+                                                  rows={5}
+                                                  fullWidth
+                                              />
+                                              <SoftBox display="flex" justifyContent="space-between" alignItems="center" fullWidth="100%">
+                                                {saveSuccess && <SoftTypography fontWeight="regular" variant="body2" color="text" sx={{ ml: 1 }}>Changes saved successfully!</SoftTypography>}
+                                                <SoftButton color="dark" size="small" onClick={handleSave} >Save</SoftButton>
+                                              </SoftBox>
                                             </SoftBox>
                                         </Card>
                                         )}
