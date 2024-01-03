@@ -9,11 +9,20 @@ import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import prompts from "./components/prompttexts";
 import PropTypes from 'prop-types';
+import SoftInput from "components/SoftInput";
+import SoftButton from "components/SoftButton";
 //import getGPTResponse from "./components/openairesponse";
+import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-function PromptSettings({ promptsData }) {
 
+function PromptSettings({ promptsData, onUpdatePromptsData }) {
+
+  const [editingPromptId, setEditingPromptId] = useState(null); // Tracks the ID of the prompt being edited
+  const [currentPromptId, setCurrentPromptId] = useState(null); // State for current prompt ID
+  const [editedText, setEditedText] = useState('');
   const [selectedPrompts, setSelectedPrompts] = useState({});
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     // Initialize selectedPrompts state based on promptsData
@@ -23,7 +32,7 @@ function PromptSettings({ promptsData }) {
     // Check for saved selected prompts in local storage
     const savedPrompts = JSON.parse(localStorage.getItem('selectedPrompts'));
     if (savedPrompts) {
-      
+
       // Ensure all prompts in promptsData have a value in savedPrompts
       const updatedSavedPrompts = { ...initialSelectedPrompts, ...savedPrompts };
       setSelectedPrompts(updatedSavedPrompts);
@@ -41,8 +50,9 @@ function PromptSettings({ promptsData }) {
     localStorage.setItem('selectedPrompts', JSON.stringify(newSelectedPrompts));
   };
 
-  const handleMenuClick = (event, prompt) => {
-    setAnchorEl({ [prompt]: event.currentTarget });
+  const handleMenuClick = (event, promptId) => {
+    setAnchorEl({ [promptId]: event.currentTarget });
+    setCurrentPromptId(promptId);
   };
 
   const handleMenuClose = () => {
@@ -55,6 +65,58 @@ function PromptSettings({ promptsData }) {
       setSelectedPrompts(savedPrompts);
     }
   }, []);
+
+
+
+  // Editing of Prompts 
+
+  const handleEditClick = () => {
+    handleMenuClose(); // Close the menu
+    setEditingPromptId(currentPromptId);
+    setEditedText(promptsData[currentPromptId]);
+  };
+  
+  const handleTextChange = (event) => {
+    setEditedText(event.target.value);
+  };
+  
+  const handleSave = async () => {
+    // Check if a prompt is being edited
+    if (editingPromptId) {
+      // Get the current authenticated user
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      // Ensure that the user is authenticated
+      if (user) {
+        const db = getFirestore();
+        const promptRef = doc(db, `users/${user.uid}/prompts/${editingPromptId}`);
+  
+        try {
+          // Update the Firestore document
+          await updateDoc(promptRef, { content: editedText });
+  
+          // Update local promptsData state with the new edited text
+          onUpdatePromptsData({ ...promptsData, [editingPromptId]: editedText });
+  
+          setSaveSuccess(true);
+          setTimeout(() => setSaveSuccess(false), 3000);
+          // Exit editing mode
+          //setEditingPromptId(null);
+          //setEditedText('');
+        } catch (error) {
+          console.error("Error updating prompt:", error);
+        }
+      } else {
+        console.error("No authenticated user found");
+      }
+    }
+  };
+
+
+
+
+
 
 
   const onStyle = {
@@ -78,7 +140,7 @@ function PromptSettings({ promptsData }) {
  
       <SoftBox pt={2.5} pb={3} px={2} lineHeight={1.25}>
         <Grid container spacing={2}>
-          {Object.keys(prompts).map((prompt, index) => (
+          {Object.keys(promptsData).map((prompt, index) => (
             <Grid item xs={12} sm={6} key={index}>
               <Card sx={{ ...customCardStyle, ...(selectedPrompts[prompt] ? onStyle : offStyle) }}>
                 <SoftBox display="flex" justifyContent="space-between" alignItems="center">
@@ -96,11 +158,11 @@ function PromptSettings({ promptsData }) {
                     more_vert
                   </Icon>
                   <Menu
-                    anchorEl={anchorEl?.[prompt]}
-                    open={Boolean(anchorEl?.[prompt])}
+                    anchorEl={anchorEl?.[currentPromptId]}
+                    open={Boolean(anchorEl?.[currentPromptId])}
                     onClose={handleMenuClose}
                   >
-                    <MenuItem onClick={handleMenuClose}>Option 1</MenuItem>
+                    <MenuItem onClick={handleEditClick}>Edit Prompt</MenuItem>
                     <MenuItem onClick={handleMenuClose}>Option 2</MenuItem>
                   </Menu>
                 </SoftBox>
@@ -109,13 +171,30 @@ function PromptSettings({ promptsData }) {
           ))}
 
         </Grid>
+        {editingPromptId && (
+                                        <Card sx={{ marginTop: 4, padding: 2, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)' }}>
+                                            <SoftBox sx={{ padding: 1 }}>
+                                            <SoftTypography variant="body2" sx={{ ml: 1, mb: 1}}>Editing: {editingPromptId}</SoftTypography>
+                                            <SoftInput sx={{mb: 2}}
+                                                value={editedText}
+                                                onChange={(e) => setEditedText(e.target.value)}
+                                                multiline
+                                                rows={4}
+                                                fullWidth
+                                            />
+                                            <SoftButton sx={{ background: '#e9ecef' }} onClick={handleSave} >Save Changes</SoftButton>
+                                            {saveSuccess && <SoftTypography variant="body2" color="success" sx={{ ml: 1 }}>Changes saved successfully!</SoftTypography>}
+                                            </SoftBox>
+                                        </Card>
+                                        )}
       </SoftBox>
 
   );
 }
 
 PromptSettings.propTypes = {
-  promptsData: PropTypes.objectOf(PropTypes.string).isRequired
+  promptsData: PropTypes.objectOf(PropTypes.string).isRequired,
+  onUpdatePromptsData: PropTypes.func.isRequired,
 };
 
 export default PromptSettings;

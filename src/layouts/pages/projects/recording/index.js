@@ -260,6 +260,10 @@ function RecordingAudio() {
         setSelectedPrompts(newSelectedPrompts);
     };
 
+    const updatePromptsData = (newData) => {
+        setPromptsData(newData);
+    };
+
     const handleGenerateSummariesClick = async () => {
         const generatedSummaries = {};
         const selectedPrompts = JSON.parse(localStorage.getItem('selectedPrompts'));
@@ -760,7 +764,7 @@ function RecordingAudio() {
                                 {currentTab === 1 && (
                                     <SoftBox sx={{ Height: '250px' }}>
                                         < Grid item xs={12} lg={12}>
-                                            < PromptSettings promptsData={promptsData} />
+                                            < PromptSettings promptsData={promptsData} onUpdatePromptsData={updatePromptsData} />
                                         </Grid>
                                         < Grid item xs={12} lg={12} textAlign={'right'} mb={1} mt={1} >
                                             < SoftButton size='small' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} >
