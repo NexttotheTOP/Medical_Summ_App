@@ -108,6 +108,7 @@ const db = getFirestore();
 
 
 function RecordingAudio() {
+
     const [audioDetails, setAudioDetails] = useState(initialState);
     const [transcript, setTranscript] = useState({ id: '' });
     const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +134,7 @@ function RecordingAudio() {
     const [textFormatting, setTextFormatting] = useState(localStorage.getItem('textFormatting') === 'true');
     const [punctuation, setPunctuation] = useState(localStorage.getItem('punctuation') === 'true');
     const [selectedPrompts, setSelectedPrompts] = useState({})
+    const [promptsData, setPromptsData] = useState({});
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
@@ -190,6 +192,22 @@ function RecordingAudio() {
                 } catch (error) {
                     console.error("Error fetching patients:", error);
                 }
+
+                // Fetch prompts
+                const promptsRef = collection(db, `users/${user.uid}/prompts`);
+
+                try {
+                    const querySnapshot = await getDocs(promptsRef);
+                    let promptsData = {};
+                    querySnapshot.forEach((doc) => {
+                        promptsData[doc.id] = doc.data().content; // Assuming 'content' holds the prompt text
+                    });
+                    // Update your state or context with fetched prompts
+                    setPromptsData(promptsData);
+                } catch (error) {
+                    console.error("Error fetching prompts:", error);
+                }
+
             } else {
                 console.log("No user logged in");
             }
@@ -200,6 +218,7 @@ function RecordingAudio() {
     const handlePatientSelection = (event) => {
         setSelectedPatient(event.target.value);
     };
+
 
     // Function to save summaries to Firestore
     /*const saveSummariesToFirestore = async () => {
@@ -248,7 +267,7 @@ function RecordingAudio() {
         try {
             for (const prompt in selectedPrompts) {
                 if (selectedPrompts[prompt]) {
-                    const promptText = prompts[prompt];
+                    const promptText = promptsData[prompt];
                     const combinedPrompt = `${promptText}\n\n${transcript.text}`; // Combine prompt text with transcript
     
                     const response = await fetch('https://stt-real-time-app-ea32710afdd5.herokuapp.com/openai', {
@@ -741,7 +760,7 @@ function RecordingAudio() {
                                 {currentTab === 1 && (
                                     <SoftBox sx={{ Height: '250px' }}>
                                         < Grid item xs={12} lg={12}>
-                                            < PromptSettings />
+                                            < PromptSettings promptsData={promptsData} />
                                         </Grid>
                                         < Grid item xs={12} lg={12} textAlign={'right'} mb={1} mt={1} >
                                             < SoftButton size='small' sx={{boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', background: '#e9ecef'}} >

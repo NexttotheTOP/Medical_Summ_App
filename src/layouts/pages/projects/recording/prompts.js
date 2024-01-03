@@ -8,12 +8,31 @@ import MenuItem from "@mui/material/MenuItem";
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import prompts from "./components/prompttexts";
+import PropTypes from 'prop-types';
 //import getGPTResponse from "./components/openairesponse";
 
-function PromptSettings() {
-  const [selectedPrompts, setSelectedPrompts] = useState(
-    Object.keys(prompts).reduce((acc, prompt) => ({ ...acc, [prompt]: false }), {})
-  );
+function PromptSettings({ promptsData }) {
+
+  const [selectedPrompts, setSelectedPrompts] = useState({});
+
+  useEffect(() => {
+    // Initialize selectedPrompts state based on promptsData
+    const initialSelectedPrompts = Object.keys(promptsData).reduce((acc, prompt) => ({ ...acc, [prompt]: false }), {});
+    // setSelectedPrompts(initialSelectedPrompts);
+
+    // Check for saved selected prompts in local storage
+    const savedPrompts = JSON.parse(localStorage.getItem('selectedPrompts'));
+    if (savedPrompts) {
+      
+      // Ensure all prompts in promptsData have a value in savedPrompts
+      const updatedSavedPrompts = { ...initialSelectedPrompts, ...savedPrompts };
+      setSelectedPrompts(updatedSavedPrompts);
+    } else {
+      setSelectedPrompts(initialSelectedPrompts);
+    }
+  }, [promptsData]);
+
+
   const [anchorEl, setAnchorEl] = useState(null); // State for menu anchor
 
   const handleSwitchChange = (prompt) => {
@@ -94,5 +113,9 @@ function PromptSettings() {
 
   );
 }
+
+PromptSettings.propTypes = {
+  promptsData: PropTypes.objectOf(PropTypes.string).isRequired
+};
 
 export default PromptSettings;
