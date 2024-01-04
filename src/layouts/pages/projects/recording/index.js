@@ -634,17 +634,17 @@ function RecordingAudio() {
                                                 '& ._1dpop': {background: '#344767', boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1) !important' },
                                                 '& ._1ceqH ._1dpop:hover ._3wi1g': {fill: 'lightgray'},
                                                 '& ._1ceqH ._1Yplu ._1Pz2d': {background: '#344767',
-                                                border: '1px solid white', fontWeight: 'bold !important',
+                                                border: '1px solid white', fontWeight: 'bold !important', 
                                                 fontSize: '16px', borderRadius: '6px',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'
                                                 },
-                                                '& ._1ceqH ._1Yplu ._1Pz2d:hover': {background: 'white !important'},
-                                                '& ._1ceqH ._1Yplu ._2gd2_': {background: 'white !important',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
-                                                '& ._1ceqH ._1Yplu ._2gd2_:hover': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
+                                                '& ._1ceqH ._1Yplu ._1Pz2d:hover': {background: 'white !important', color: 'black !important'},
+                                                '& ._1ceqH ._1Yplu ._2gd2_': {background: 'white !important', color: 'black !important',  boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
+                                                '& ._1ceqH ._1Yplu ._2gd2_:hover': {background: '#344767 !important',   boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)'},
                                                 '& ._1ceqH ._dt3-T': {minHeight: '270px'},
                                                 '& ._1ceqH ._2fG9h': {padding: '20px'},
                                                 '& ._eV_dK': {display: 'none'},
-                                                '& ._1ceqH ._qxztz ._1bSom': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important'},
-                                                '& ._1ceqH ._qxztz ._3nQu5': {background: 'linear-gradient(to left, #2152ff, #21d4fd) !important'},
+                                                '& ._1ceqH ._qxztz ._1bSom': {background: '#344767'},
+                                                '& ._1ceqH ._qxztz ._3nQu5': {background: '#344767'},
                                                 '& ._1ceqH ._oEOY-': {border: '3px solid white !important', width: '20px', height: '20px'},
                                                 '& ._1ceqH ._qxztz': {left: '53%'},
                                                 '& ._1ceqH ._2ACrw': {borderColor: '3px solid white !important', left: '55%', height: '19px', width: '19px'},
@@ -722,6 +722,7 @@ function RecordingAudio() {
                                         <Grid container spacing={3}>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={sentimentAnalysis}
                                                     icon={sentimentAnalysis ? customIcons.highlightIconLight : customIcons.highlightIconDark}
                                                     title="Sentiment Analysis"
@@ -736,6 +737,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={entityDetection}
                                                     icon={entityDetection ? customIcons.entityDetectionIconLight : customIcons.entityDetectionIconDark}
                                                     title='Entity Detection'
@@ -745,6 +747,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={keyPhrases}
                                                     icon={keyPhrases ? customIcons.keyPhrasesIconLight : customIcons.keyPhrasesIconDark}
                                                     title='Key Phrases'
@@ -755,6 +758,7 @@ function RecordingAudio() {
                                             
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={topicDetection}
                                                     icon={topicDetection ? customIcons.topicDetectionIconLight : customIcons.topicDetectionIconDark}
                                                     title='Topic Detection'
@@ -764,6 +768,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={speakerDiarization}
                                                     icon={speakerDiarization ? customIcons.speakerDiarizationIconLight : customIcons.speakerDiarizationIconDark}
                                                     title='Speaker Diarization'
@@ -773,6 +778,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={contentModeration}
                                                     icon={contentModeration ? customIcons.contentModerationIconLight : customIcons.contentModerationIconDark}
                                                     title='Content Moderation'
@@ -781,6 +787,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={textFormatting}
                                                     icon={textFormatting ? customIcons.textFormattingIconLight : customIcons.textFormattingIconDark}
                                                     title='Text Formatting'
@@ -790,6 +797,7 @@ function RecordingAudio() {
                                             </Grid>
                                             <Grid item xs={12} sm={4} lg={3}>
                                                 <ControllerCard
+                                                    color={"secondary"}
                                                     state={punctuation}
                                                     icon={punctuation ? customIcons.punctuationIconLight : customIcons.punctuationIconDark}
                                                     title='Punctuation'
